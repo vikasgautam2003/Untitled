@@ -56,7 +56,7 @@
 import { WebContainer, FileSystemTree } from '@webcontainer/api';
 import { getWebContainerInstance } from './instance';
 
-function parseJsonToTree(files: Record<string, any>): FileSystemTree {
+export function parseJsonToTree(files: Record<string, any>): FileSystemTree {
   const root: FileSystemTree = {};
 
   for (const [path, content] of Object.entries(files)) {
