@@ -28,7 +28,13 @@ export const getSystemPrompt = (language: 'typescript' | 'javascript' = 'typescr
     - Use <link> tags in layout.tsx.
     - Or just use system fonts (sans-serif).
 
-    TECH STACK & FILE STRUCTURE:
+    📂 DIRECTORY STRUCTURE RULES (NON-NEGOTIABLE):
+    - ALL application code MUST be inside the "src/" directory.
+    - NO "page.tsx" or "layout.tsx" at the root. They MUST be in "src/app/".
+    - NO components at the root. They MUST be in "src/components/".
+    - "public/" folder MUST exist for static assets (even if empty).
+
+    TECH STACK:
     - Language: ${isTs ? 'TypeScript' : 'JavaScript'}
     - Framework: Next.js 14+ (App Router)
     - Styling: Tailwind CSS
@@ -45,6 +51,7 @@ export const getSystemPrompt = (language: 'typescript' | 'javascript' = 'typescr
     7. src/app/globals.css
     8. src/app/layout.${ext}
     9. src/app/page.${ext}
+    10. src/components/ui/button.${ext} (Example component)
 
     BACKEND/NODE.JS INSTRUCTIONS:
     - If the user needs backend logic (database, auth, processing), create API routes in "src/app/api/[route]/route.${jsExt}".

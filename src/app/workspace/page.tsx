@@ -22,8 +22,7 @@
 // import { jsonrepair } from 'jsonrepair';
 // import FileExplorer from '@/components/workspace/file-tree/FileExplorer';
 // import { useFileStore } from '@/stores/useFileStore';
-
-
+// import CodeEditor from '@/components/workspace/editor/CodeEditor';
 
 // const TerminalPanel = dynamic(
 //   () => import('@/components/workspace/terminal/TerminalPanel'),
@@ -85,7 +84,7 @@
 //     addLog('🧠 SYSTEM: Initializing AI Protocol...');
 
 //     try {
-//       addLog('📡 CONNECTING: Contacting Gemini 2.5 Flash...');
+//       addLog('📡 CONNECTING: Contacting Gemini 1.5 Flash...');
 //       const userPrompt = "Build a simple Next.js landing page for a Cyberpunk Coffee Shop. Use Tailwind CSS. Make it look dark and neon.";
       
 //       const messages = [
@@ -139,69 +138,108 @@
 //         }
 //       }
 
-//       fileTree['.babelrc'] = JSON.stringify({
-//           "presets": ["next/babel"]
-//         });
+//      fileTree['.babelrc'] = JSON.stringify({
+//         "presets": ["next/babel"]
+//       });
 
-//         try {
-//           let pkg;
-//           const pkgData = fileTree['package.json'];
+//       // 2. Hardcode Next Config (Fixes ESM/CJS issues)
+//       fileTree['next.config.mjs'] = `
+// /** @type {import('next').NextConfig} */
+// const nextConfig = {
+//   reactStrictMode: true,
+//   swcMinify: false, // Force Babel
+// };
+// export default nextConfig;
+//       `.trim();
 
-//           if (typeof pkgData === 'object' && pkgData !== null) {
-//             pkg = pkgData;
-//           } else if (typeof pkgData === 'string') {
-//             pkg = JSON.parse(pkgData);
-//           } else {
-//             throw new Error("package.json is missing or invalid type");
-//           }
+//       // 3. Hardcode PostCSS Config (Fixes "SyntaxError: Unexpected token")
+//       // CRITICAL: This MUST be module.exports, not export default
+//       fileTree['postcss.config.js'] = `
+// module.exports = {
+//   plugins: {
+//     tailwindcss: {},
+//     autoprefixer: {},
+//   },
+// };
+//       `.trim();
 
-//           pkg.dependencies = pkg.dependencies || {};
-//           pkg.dependencies['@babel/runtime'] = 'latest';
-//           pkg.dependencies['@babel/plugin-transform-runtime'] = 'latest';
+//       // 4. Hardcode Tailwind Config (Ensures content paths are correct)
+//       fileTree['tailwind.config.ts'] = `
+// import type { Config } from "tailwindcss";
 
-//           fileTree['package.json'] = JSON.stringify(pkg, null, 2);
+// const config: Config = {
+//   content: [
+//     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+//     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+//     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+//   ],
+//   theme: {
+//     extend: {
+//       colors: {
+//         background: "var(--background)",
+//         foreground: "var(--foreground)",
+//       },
+//     },
+//   },
+//   plugins: [],
+// };
+// export default config;
+//       `.trim();
 
-//           addLog('🛡️ SYSTEM: Injected Babel dependencies for stability.');
-//         } catch (e) {
-//           console.error("Failed to patch package.json", e);
-//           addLog(`⚠️ PATCH FAILED: Could not update package.json - ${e}`);
+//       // 5. Inject Missing Dependencies (Fixes "regenerator" Crash)
+//       try {
+//         let pkg;
+//         const pkgData = fileTree['package.json'];
+        
+//         // Handle String vs Object
+//         if (typeof pkgData === 'object' && pkgData !== null) {
+//           pkg = pkgData;
+//         } else if (typeof pkgData === 'string') {
+//           pkg = JSON.parse(pkgData);
+//         } else {
+//            // Fallback if missing
+//            pkg = { dependencies: {}, scripts: { dev: "next dev" } };
 //         }
 
+//         pkg.dependencies = pkg.dependencies || {};
+//         // Babel Runtimes
+//         pkg.dependencies['@babel/runtime'] = 'latest';
+//         pkg.dependencies['@babel/plugin-transform-runtime'] = 'latest';
+//         // Tailwind essentials (in case AI forgot)
+//         pkg.dependencies['tailwindcss'] = 'latest';
+//         pkg.dependencies['postcss'] = 'latest';
+//         pkg.dependencies['autoprefixer'] = 'latest';
 
-
-//         const layoutPath = 'src/app/layout.tsx';
-      
-  
-//       if (fileTree[layoutPath] && fileTree[layoutPath].includes('next/font')) {
-//         addLog('⚠️ DETECTED BANNED FONT IMPORT. Sanitizing layout.tsx...');
-        
-                       
-//           fileTree[layoutPath] = `
-//                 import './globals.css';
-
-//                 export const metadata = {
-//                   title: 'Generated App',
-//                   description: 'Created with AI',
-//                 };
-
-//                 export default function RootLayout({
-//                   children,
-//                 }: {
-//                   children: React.ReactNode;
-//                 }) {
-//                   return (
-//                     <html lang="en">
-//                       <body>{children}</body>
-//                     </html>
-//                   );
-//                 }
-//         `.trim();
-//         addLog('✅ SANITIZATION COMPLETE: Replaced layout with safe version.');
+//         fileTree['package.json'] = JSON.stringify(pkg, null, 2);
+//         addLog('🛡️ SYSTEM: Config files overwritten with stable versions.');
+//       } catch (e) {
+//         console.error("Patch failed", e);
 //       }
 
+//       // 6. SANITIZER: Kill 'next/font' (Fixes Font Crash)
+//       const layoutPath = 'src/app/layout.tsx';
+//       if (fileTree[layoutPath] && fileTree[layoutPath].includes('next/font')) {
+//         addLog('⚠️ DETECTED BANNED FONT. Sanitizing layout...');
+//         fileTree[layoutPath] = `
+// import './globals.css';
+// export const metadata = { title: 'App', description: 'Generated by AI' };
+// export default function RootLayout({ children }: { children: React.ReactNode }) {
+//   return (
+//     <html lang="en">
+//       <body>{children}</body>
+//     </html>
+//   );
+// }
+//         `.trim();
+//       }
 
 //       addLog('💾 FILESYSTEM: Writing files to virtual memory...');
 //       await mountFiles(fileTree);
+      
+//       // Update File Explorer State
+//       const treeStruct = parseJsonToTree(fileTree);
+//       useFileStore.getState().setFileTree(treeStruct);
+
 //       addLog('✅ FILESYSTEM: Write Complete.');
 
 //       await startDevServer();
@@ -221,7 +259,9 @@
     
 //   //   const installProcess = await instance.spawn('npm', [
 //   //     'install', 
+//   //     '--no-optional',
 //   //     '--no-audit', 
+//   //     '--prefer-offline',
 //   //     '--no-fund', 
 //   //     '--no-progress', 
 //   //     '--loglevel=error'
@@ -257,36 +297,54 @@
 //   // };
 
 
-// const startDevServer = async () => {
+
+//   // -------------------------------------------------------------------------
+//   // 🚀 ENGINE STARTER (WITH SMART CACHING)
+//   // -------------------------------------------------------------------------
+//   const startDevServer = async () => {
 //     const instance = await getWebContainerInstance();
     
-//     addLog('📦 PACKAGE MANAGER: Installing dependencies...');
-    
-//     const installProcess = await instance.spawn('npm', [
-//       'install', 
-//       '--no-optional',
-//       '--no-audit', 
-//       '--prefer-offline',
-//       '--no-fund', 
-//       '--no-progress', 
-//       '--loglevel=error'
-//     ]);
-
-//     installProcess.output.pipeTo(new WritableStream({
-//       write(data) { 
-//         if (!['|', '/', '-', '\\'].includes(data.trim())) {
-//            addLog(`[npm]: ${data}`); 
-//         }
-//       }
-//     }));
-
-//     const installExitCode = await installProcess.exit;
-//     if (installExitCode !== 0) {
-//       addLog('❌ INSTALL FAILED: Dependency error. Check logs above.');
-//       return;
+//     // 1. CHECK CACHE: Do we really need to install?
+//     let shouldInstall = true;
+//     try {
+//       await instance.fs.readdir('node_modules');
+//       shouldInstall = false; // Folder exists!
+//       addLog('⚡ SPEED MODE: "node_modules" detected. Skipping install.');
+//     } catch (error) {
+//       // If readdir fails, it means node_modules doesn't exist.
+//       shouldInstall = true;
 //     }
-//     addLog('✅ INSTALL COMPLETE.');
 
+//     // 2. INSTALL (Only if missing)
+//     if (shouldInstall) {
+//       addLog('📦 PACKAGE MANAGER: Installing dependencies (First run only)...');
+//       const installProcess = await instance.spawn('npm', [
+//         'install', 
+//         '--no-optional',
+//         '--no-audit', 
+//         '--prefer-offline',
+//         '--no-fund', 
+//         '--no-progress', 
+//         '--loglevel=error'
+//       ]);
+
+//       installProcess.output.pipeTo(new WritableStream({
+//         write(data) { 
+//           if (!['|', '/', '-', '\\'].includes(data.trim())) {
+//              addLog(`[npm]: ${data}`); 
+//           }
+//         }
+//       }));
+
+//       const installExitCode = await installProcess.exit;
+//       if (installExitCode !== 0) {
+//         addLog('❌ INSTALL FAILED: Dependency error. Check logs above.');
+//         return;
+//       }
+//       addLog('✅ INSTALL COMPLETE.');
+//     }
+
+//     // 3. START SERVER
 //     addLog('🚀 LAUNCHER: Starting Next.js Dev Server...');
 //     const devProcess = await instance.spawn('npm', ['run', 'dev']);
 
@@ -310,25 +368,34 @@
 //            // AI_NEURAL_LINK
 //         </div>
         
-//         <div className="flex-1 p-4 flex flex-col gap-4">
-//           <div className="bg-neutral-900 p-4 rounded text-sm text-neutral-400">
-//             Current Objective: <br/>
-//             <span className="text-white">"Build a Cyberpunk Coffee Shop Landing Page"</span>
+//         <div className="flex-1 flex flex-col">
+//           <div className="p-4 flex flex-col gap-4">
+//             <div className="bg-neutral-900 p-4 rounded text-sm text-neutral-400">
+//               Current Objective: <br/>
+//               <span className="text-white">"Build a Cyberpunk Coffee Shop Landing Page"</span>
+//             </div>
+
+//             <button 
+//               onClick={handleGenerate}
+//               disabled={isGenerating}
+//               className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-mono text-sm rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+//             >
+//               {isGenerating ? (
+//                 <>
+//                   <span className="animate-spin">⚙️</span> PROCESSING...
+//                 </>
+//               ) : (
+//                 <>⚡ GENERATE APP</>
+//               )}
+//             </button>
 //           </div>
 
-//           <button 
-//             onClick={handleGenerate}
-//             disabled={isGenerating}
-//             className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-mono text-sm rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-//           >
-//             {isGenerating ? (
-//               <>
-//                 <span className="animate-spin">⚙️</span> PROCESSING...
-//               </>
-//             ) : (
-//               <>⚡ GENERATE APP</>
-//             )}
-//           </button>
+//           <div className="flex-1 overflow-hidden border-t border-neutral-800 flex flex-col">
+//              <div className="px-4 py-2 bg-neutral-900/50 text-xs font-mono text-neutral-400 border-b border-neutral-800">
+//                 EXPLORER
+//              </div>
+//              <FileExplorer />
+//           </div>
 //         </div>
 //       </aside>
 
@@ -350,10 +417,336 @@
 
 //         <div className="flex-1 bg-[#1e1e1e] relative">
 //           {activeTab === 'editor' ? (
-//              <div className="absolute inset-0 flex items-center justify-center text-neutral-600 font-mono text-sm">
-//                [Editor View - Files are in Memory] <br/>
-//                (Visual Editor coming in Phase 4)
+//    <div className="absolute inset-0 bg-[#1e1e1e]">
+//       <CodeEditor />
+//    </div>
+// )  : (
+//             <div className="absolute inset-0 bg-white">
+//               {iframeUrl ? (
+//                 <iframe src={iframeUrl} className="w-full h-full border-none" />
+//               ) : (
+//                 <div className="flex items-center justify-center h-full text-black font-mono">
+//                   [Waiting for Server Start...]
+//                 </div>
+//               )}
+//             </div>
+//           )}
+//         </div>
+
+//         <div className="h-64 border-t border-neutral-800 flex flex-col">
+//            <div className="px-4 py-1 bg-neutral-900 border-b border-neutral-800 text-[10px] text-neutral-400 font-mono flex justify-between items-center">
+//              <span>TERMINAL STREAM</span>
+//              <span className="text-green-500">● {iframeUrl ? 'Live' : 'Idle'}</span>
+//            </div>
+//            <div className="flex-1 bg-black overflow-hidden relative">
+//              <TerminalPanel />
+//            </div>
+//         </div>
+//       </main>
+//     </div>
+//   );
+// }
+
+
+
+
+
+
+
+
+
+
+// 'use client';
+
+// import { useState } from 'react';
+// import dynamic from 'next/dynamic';
+// import { useTerminalStore } from '@/stores/useTerminalStore';
+// import { getWebContainerInstance } from '@/lib/webcontainer/instance';
+// import { mountFiles, parseJsonToTree } from '@/lib/webcontainer/mount';
+// import { model } from '@/lib/ai/model';
+// import { getSystemPrompt } from '@/lib/ai/prompts';
+// import { HumanMessage } from "@langchain/core/messages";
+// import { jsonrepair } from 'jsonrepair';
+// import FileExplorer from '@/components/workspace/file-tree/FileExplorer';
+// import { useFileStore } from '@/stores/useFileStore';
+// import CodeEditor from '@/components/workspace/editor/CodeEditor';
+
+
+// import { BACKUP_FILES } from '@/lib/consts';
+// import { fixJsonWithGroq } from '@/lib/ai/repair';
+// import { applySafetyOverrides } from '@/lib/webcontainer/safety';
+
+// const TerminalPanel = dynamic(
+//   () => import('@/components/workspace/terminal/TerminalPanel'),
+//   { ssr: false }
+// );
+
+// export default function WorkspacePage() {
+//   const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
+//   const [isGenerating, setIsGenerating] = useState(false);
+//   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
+  
+//   const { addLog } = useTerminalStore();
+
+//   const handleGenerate = async () => {
+//     setIsGenerating(true);
+//     setActiveTab('editor'); 
+//     addLog('🧠 SYSTEM: Initializing AI Protocol...');
+
+//     try {
+//       addLog('📡 CONNECTING: Contacting Gemini 1.5 Flash...');
+//       const userPrompt = "Build a simple Next.js landing page for a Cyberpunk Coffee Shop. Use Tailwind CSS. Make it look dark and neon.";
+      
+//       const messages = [
+//         getSystemPrompt('typescript'),
+//         new HumanMessage(userPrompt)
+//       ];
+
+//       const response = await model.invoke(messages);
+//       const rawContent = response.content as string;
+//       addLog('⚡ DATA RECEIVED: Parsing Neural Network Output...');
+
+//       let cleanJson = rawContent;
+      
+//       // 1. Strip Markdown
+//       if (rawContent.includes('```json')) {
+//         cleanJson = rawContent.replace(/```json/g, '').replace(/```/g, '');
+//       } else if (rawContent.includes('```')) {
+//         cleanJson = rawContent.replace(/```/g, '');
+//       }
+
+//       // 2. Extract JSON
+//       const firstBrace = cleanJson.indexOf('{');
+//       const lastBrace = cleanJson.lastIndexOf('}');
+      
+//       if (firstBrace !== -1 && lastBrace !== -1) {
+//         cleanJson = cleanJson.substring(firstBrace, lastBrace + 1);
+//       } else {
+//         throw new Error("No JSON object found in AI response.");
+//       }
+
+//       // 3. Parse & Repair
+//       let fileTree;
+//       try {
+//         fileTree = JSON.parse(cleanJson);
+//         addLog('✅ PARSE SUCCESS: Standard JSON is valid.');
+//       } catch (e) {
+//         addLog('⚠️ WARNING: Syntax Error. Attempting fast repair...');
+//         try {
+//             const repairedJson = jsonrepair(cleanJson);
+//             fileTree = JSON.parse(repairedJson);
+//             addLog('✅ REPAIR SUCCESS: Fixed with heuristics.');
+//         } catch (repairError) {
+//             addLog('🚨 HEURISTIC FAILED. Activating Groq Llama 3 for surgical repair...');
+//             try {
+//                const fixedJson = await fixJsonWithGroq(cleanJson);
+//                fileTree = JSON.parse(fixedJson);
+//                addLog('✅ GROQ SUCCESS: Llama 3 reconstructed the JSON.');
+//             } catch (groqError) {
+//                addLog('❌ CRITICAL FAILURE: Even Groq could not fix it.');
+//                addLog('🛡️ ENGAGING FALLBACK PROTOCOL...');
+//                fileTree = BACKUP_FILES;
+//             }
+//         }
+//       }
+
+//       // 4. Apply Safety Overrides (Babel, Configs, Fonts)
+//       applySafetyOverrides(fileTree, addLog);
+
+//       // 5. Mount & Sync
+//       addLog('💾 FILESYSTEM: Writing files to virtual memory...');
+//       await mountFiles(fileTree);
+      
+//       const treeStruct = parseJsonToTree(fileTree);
+//       useFileStore.getState().setFileTree(treeStruct);
+
+//       addLog('✅ FILESYSTEM: Write Complete.');
+
+//       await startDevServer();
+
+//     } catch (error: any) {
+//       addLog(`❌ FATAL ERROR: ${error.message || error}`);
+//       console.error(error);
+//     } finally {
+//       setIsGenerating(false);
+//     }
+//   };
+
+//   // const startDevServer = async () => {
+//   //   const instance = await getWebContainerInstance();
+    
+//   //   // 1. Check Cache
+//   //   let shouldInstall = true;
+//   //   try {
+//   //     await instance.fs.readdir('node_modules');
+//   //     shouldInstall = false;
+//   //     addLog('⚡ SPEED MODE: "node_modules" detected. Skipping install.');
+//   //   } catch (error) {
+//   //     shouldInstall = true;
+//   //   }
+
+//   //   // 2. Install (if needed)
+//   //   if (shouldInstall) {
+//   //     addLog('📦 PACKAGE MANAGER: Installing dependencies (First run only)...');
+//   //     const installProcess = await instance.spawn('npm', [
+//   //       'install', 
+//   //       '--no-optional',
+//   //       '--no-audit', 
+//   //       '--prefer-offline',
+//   //       '--no-fund', 
+//   //       '--no-progress', 
+//   //       '--loglevel=error'
+//   //     ]);
+
+//   //     installProcess.output.pipeTo(new WritableStream({
+//   //       write(data) { 
+//   //         if (!['|', '/', '-', '\\'].includes(data.trim())) {
+//   //            addLog(`[npm]: ${data}`); 
+//   //         }
+//   //       }
+//   //     }));
+
+//   //     const installExitCode = await installProcess.exit;
+//   //     if (installExitCode !== 0) {
+//   //       addLog('❌ INSTALL FAILED: Dependency error. Check logs above.');
+//   //       return;
+//   //     }
+//   //     addLog('✅ INSTALL COMPLETE.');
+//   //   }
+
+//   //   addLog('🚀 LAUNCHER: Starting Next.js Dev Server...');
+//   //   const devProcess = await instance.spawn('npm', ['run', 'dev']);
+
+//   //   devProcess.output.pipeTo(new WritableStream({
+//   //     write(data) { addLog(`[Server]: ${data}`); }
+//   //   }));
+
+//   //   instance.on('server-ready', (port, url) => {
+//   //     addLog(`🌐 SERVER ONLINE: App running at ${url}`);
+//   //     setIframeUrl(url);
+//   //     setActiveTab('preview');
+//   //   });
+//   // };
+
+
+  
+// const startDevServer = async () => {
+//   const instance = await getWebContainerInstance();
+//   let shouldInstall = true;
+
+//   try {
+//     await instance.fs.readdir('node_modules');
+//     shouldInstall = false;
+//     addLog('SPEED MODE: node_modules detected. Skipping install.');
+//   } catch (_) {
+//     shouldInstall = true;
+//   }
+
+//   if (shouldInstall) {
+//     addLog('Installing...');
+
+//     const installProcess = await instance.spawn('npm', [
+//       'install',
+//       '--prefer-offline'
+//     ]);
+
+//     installProcess.output.pipeTo(
+//       new WritableStream({
+//         write(_) {
+//           /* ignore all npm output completely */
+//         }
+//       })
+//     );
+
+//     const installExitCode = await installProcess.exit;
+//     if (installExitCode !== 0) {
+//       addLog('INSTALL FAILED.');
+//       return;
+//     }
+
+//     addLog('INSTALL COMPLETE.');
+//   }
+
+//   addLog('Starting Next.js Dev Server...');
+//   const devProcess = await instance.spawn('npm', ['run', 'dev']);
+
+//   devProcess.output.pipeTo(
+//     new WritableStream({
+//       write(data) {
+//         addLog(`[Server]: ${data}`);
+//       }
+//     })
+//   );
+
+//   instance.on('server-ready', (port, url) => {
+//     setIframeUrl(url);
+//     setActiveTab('preview');
+//     addLog(`SERVER ONLINE: ${url}`);
+//   });
+// };
+
+
+
+
+//   return (
+//     <div className="flex h-screen w-full bg-neutral-950 text-white font-sans overflow-hidden">
+//       <aside className="w-[350px] lg:w-[400px] border-r border-neutral-800 bg-neutral-900/50 flex flex-col">
+//         <div className="p-4 border-b border-neutral-800 font-mono text-xs text-green-500 tracking-widest">
+//            // AI_NEURAL_LINK
+//         </div>
+        
+//         <div className="flex-1 flex flex-col">
+//           <div className="p-4 flex flex-col gap-4">
+//             <div className="bg-neutral-900 p-4 rounded text-sm text-neutral-400">
+//               Current Objective: <br/>
+//               <span className="text-white">"Build a Cyberpunk Coffee Shop Landing Page"</span>
+//             </div>
+
+//             <button 
+//               onClick={handleGenerate}
+//               disabled={isGenerating}
+//               className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-mono text-sm rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+//             >
+//               {isGenerating ? (
+//                 <>
+//                   <span className="animate-spin">⚙️</span> PROCESSING...
+//                 </>
+//               ) : (
+//                 <>⚡ GENERATE APP</>
+//               )}
+//             </button>
+//           </div>
+
+//           <div className="flex-1 overflow-hidden border-t border-neutral-800 flex flex-col">
+//              <div className="px-4 py-2 bg-neutral-900/50 text-xs font-mono text-neutral-400 border-b border-neutral-800">
+//                 EXPLORER
 //              </div>
+//              <FileExplorer />
+//           </div>
+//         </div>
+//       </aside>
+
+//       <main className="flex-1 flex flex-col min-w-0">
+//         <div className="h-10 border-b border-neutral-800 bg-neutral-950 flex items-center px-4 gap-4">
+//           <button 
+//             onClick={() => setActiveTab('editor')}
+//             className={`text-xs font-mono px-3 py-1 rounded transition-colors ${activeTab === 'editor' ? 'bg-green-900/20 text-green-400 border border-green-900' : 'text-neutral-500 hover:text-neutral-300'}`}
+//           >
+//             CODE_EDITOR
+//           </button>
+//           <button 
+//              onClick={() => setActiveTab('preview')}
+//              className={`text-xs font-mono px-3 py-1 rounded transition-colors ${activeTab === 'preview' ? 'bg-blue-900/20 text-blue-400 border border-blue-900' : 'text-neutral-500 hover:text-neutral-300'}`}
+//           >
+//             LIVE_PREVIEW
+//           </button>
+//         </div>
+
+//         <div className="flex-1 bg-[#1e1e1e] relative">
+//           {activeTab === 'editor' ? (
+//             <div className="absolute inset-0 bg-[#1e1e1e]">
+//                <CodeEditor />
+//             </div>
 //           ) : (
 //             <div className="absolute inset-0 bg-white">
 //               {iframeUrl ? (
@@ -393,7 +786,6 @@
 
 
 
-
 'use client';
 
 import { useState } from 'react';
@@ -402,59 +794,22 @@ import { useTerminalStore } from '@/stores/useTerminalStore';
 import { getWebContainerInstance } from '@/lib/webcontainer/instance';
 import { mountFiles, parseJsonToTree } from '@/lib/webcontainer/mount';
 import { model } from '@/lib/ai/model';
-import { groqModel } from '@/lib/ai/groq';
 import { getSystemPrompt } from '@/lib/ai/prompts';
 import { HumanMessage } from "@langchain/core/messages";
 import { jsonrepair } from 'jsonrepair';
 import FileExplorer from '@/components/workspace/file-tree/FileExplorer';
 import { useFileStore } from '@/stores/useFileStore';
+import CodeEditor from '@/components/workspace/editor/CodeEditor';
+
+// Modularized Imports
+import { BACKUP_FILES } from '@/lib/consts';
+import { fixJsonWithGroq } from '@/lib/ai/repair';
+import { applySafetyOverrides } from '@/lib/webcontainer/safety';
 
 const TerminalPanel = dynamic(
   () => import('@/components/workspace/terminal/TerminalPanel'),
   { ssr: false }
 );
-
-const BACKUP_FILES = {
-  "package.json": JSON.stringify({
-    name: "backup-app",
-    scripts: { dev: "next dev", build: "next build", start: "next start" },
-    dependencies: { 
-      "next": "14.2.3", 
-      "react": "18.3.1", 
-      "react-dom": "18.3.1",
-      "lucide-react": "latest"
-    }
-  }, null, 2),
-  "next.config.mjs": "/** @type {import('next').NextConfig} */\nconst nextConfig = {};\nexport default nextConfig;",
-  ".babelrc": "{\n  \"presets\": [\"next/babel\"]\n}",
-  "src/app/layout.tsx": "export default function RootLayout({ children }) { return <html lang='en'><body>{children}</body></html> }",
-  "src/app/page.tsx": "export default function Page() { return <div style={{padding: 50, fontFamily: 'sans-serif'}}><h1>⚠️ AI Generation Failed</h1><p>But the System Auto-Healed! Here is a fallback app.</p></div> }"
-};
-
-async function fixJsonWithGroq(brokenJson: string) {
-  const prompt = `
-    You are an expert JSON repair agent. 
-    The following JSON string is broken.
-    YOUR JOB:
-    1. Fix the syntax errors.
-    2. Remove any markdown or conversational text.
-    3. Return ONLY the valid, parsable JSON string.
-    
-    BROKEN JSON:
-    ${brokenJson}
-  `;
-
-  const response = await groqModel.invoke([new HumanMessage(prompt)]);
-  let fixed = response.content as string;
-  
-  if (fixed.includes('```json')) {
-    fixed = fixed.replace(/```json/g, '').replace(/```/g, '');
-  } else if (fixed.includes('```')) {
-    fixed = fixed.replace(/```/g, '');
-  }
-  
-  return fixed;
-}
 
 export default function WorkspacePage() {
   const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
@@ -463,259 +818,158 @@ export default function WorkspacePage() {
   
   const { addLog } = useTerminalStore();
 
+  // -------------------------------------------------------------------------
+  // 🛠️ HELPER: The "Universal Parser" (Cleans -> Repairs -> Groq)
+  // -------------------------------------------------------------------------
+  const robustParse = async (rawContent: string, stepName: string): Promise<any> => {
+    // 1. Strip Markdown
+    let cleanJson = rawContent;
+    if (rawContent.includes('```json')) {
+      cleanJson = rawContent.replace(/```json/g, '').replace(/```/g, '');
+    } else if (rawContent.includes('```')) {
+      cleanJson = rawContent.replace(/```/g, '');
+    }
+
+    // 2. Extract JSON Object (Find first { and last })
+    const firstBrace = cleanJson.indexOf('{');
+    const lastBrace = cleanJson.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1) {
+      cleanJson = cleanJson.substring(firstBrace, lastBrace + 1);
+    }
+
+    // 3. Try Parse -> Heuristic -> Groq
+    try {
+      return JSON.parse(cleanJson);
+    } catch (e) {
+      addLog(`⚠️ ${stepName}: Syntax Error. Attempting Repair...`);
+      try {
+        const repaired = jsonrepair(cleanJson);
+        return JSON.parse(repaired);
+      } catch (repairError) {
+        addLog(`🚨 ${stepName}: Heuristic Failed. Calling Groq Surgeon...`);
+        try {
+          const fixed = await fixJsonWithGroq(cleanJson);
+          return JSON.parse(fixed);
+        } catch (groqError) {
+          throw new Error(`${stepName} JSON is FUBAR.`);
+        }
+      }
+    }
+  };
+
+  // -------------------------------------------------------------------------
+  // 🧠 MAIN LOGIC: 2-Step Generation
+  // -------------------------------------------------------------------------
   const handleGenerate = async () => {
     setIsGenerating(true);
     setActiveTab('editor'); 
-    addLog('🧠 SYSTEM: Initializing AI Protocol...');
+    addLog('🧠 SYSTEM: Initializing AI Protocol (Chain-of-Thought)...');
 
     try {
-      addLog('📡 CONNECTING: Contacting Gemini 1.5 Flash...');
+      addLog('📡 CONNECTING: Phase 1 - Structural Blueprint...');
+      
+      // STEP 1: Generate Configs
+      const structurePrompt = `
+        Generate ONLY the configuration files for a Next.js 14 App Router project.
+        DO NOT generate any page code yet.
+        
+        REQUIRED FILES:
+        - package.json (React 18, Tailwind, Lucide)
+        - next.config.mjs
+        - postcss.config.js
+        - tailwind.config.ts
+        - .babelrc
+        - tsconfig.json
+        
+        Return a valid JSON object where keys are filenames and values are file content.
+      `;
+
+      const response1 = await model.invoke([
+        getSystemPrompt('typescript'),
+        new HumanMessage(structurePrompt)
+      ]);
+      
+      addLog('⚡ STRUCTURE RECEIVED. validating...');
+      const structureTree = await robustParse(response1.content as string, "Phase 1");
+
+      // STEP 2: Generate UI
+      addLog('🎨 PHASE 2: Generating Application Logic...');
       const userPrompt = "Build a simple Next.js landing page for a Cyberpunk Coffee Shop. Use Tailwind CSS. Make it look dark and neon.";
       
-      const messages = [
-        getSystemPrompt('typescript'),
-        new HumanMessage(userPrompt)
-      ];
-
-      const response = await model.invoke(messages);
-      const rawContent = response.content as string;
-      addLog('⚡ DATA RECEIVED: Parsing Neural Network Output...');
-
-      let cleanJson = rawContent;
-      
-      if (rawContent.includes('```json')) {
-        cleanJson = rawContent.replace(/```json/g, '').replace(/```/g, '');
-      } else if (rawContent.includes('```')) {
-        cleanJson = rawContent.replace(/```/g, '');
-      }
-
-      const firstBrace = cleanJson.indexOf('{');
-      const lastBrace = cleanJson.lastIndexOf('}');
-      
-      if (firstBrace !== -1 && lastBrace !== -1) {
-        cleanJson = cleanJson.substring(firstBrace, lastBrace + 1);
-      } else {
-        throw new Error("No JSON object found in AI response.");
-      }
-
-      let fileTree;
-      try {
-        fileTree = JSON.parse(cleanJson);
-        addLog('✅ PARSE SUCCESS: Standard JSON is valid.');
-      } catch (e) {
-        addLog('⚠️ WARNING: Syntax Error. Attempting fast repair...');
+      const appPrompt = `
+        You are adding files to an existing Next.js config.
+        Generate ONLY the application source code for: "${userPrompt}"
         
-        try {
-            const repairedJson = jsonrepair(cleanJson);
-            fileTree = JSON.parse(repairedJson);
-            addLog('✅ REPAIR SUCCESS: Fixed with heuristics.');
-        } catch (repairError) {
-            addLog('🚨 HEURISTIC FAILED. Activating Groq Llama 3 for surgical repair...');
-            try {
-               const fixedJson = await fixJsonWithGroq(cleanJson);
-               fileTree = JSON.parse(fixedJson);
-               addLog('✅ GROQ SUCCESS: Llama 3 reconstructed the JSON.');
-            } catch (groqError) {
-               addLog('❌ CRITICAL FAILURE: Even Groq could not fix it.');
-               addLog('🛡️ ENGAGING FALLBACK PROTOCOL...');
-               fileTree = BACKUP_FILES;
-            }
-        }
-      }
-
-     fileTree['.babelrc'] = JSON.stringify({
-        "presets": ["next/babel"]
-      });
-
-      // 2. Hardcode Next Config (Fixes ESM/CJS issues)
-      fileTree['next.config.mjs'] = `
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
-  swcMinify: false, // Force Babel
-};
-export default nextConfig;
-      `.trim();
-
-      // 3. Hardcode PostCSS Config (Fixes "SyntaxError: Unexpected token")
-      // CRITICAL: This MUST be module.exports, not export default
-      fileTree['postcss.config.js'] = `
-module.exports = {
-  plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
-  },
-};
-      `.trim();
-
-      // 4. Hardcode Tailwind Config (Ensures content paths are correct)
-      fileTree['tailwind.config.ts'] = `
-import type { Config } from "tailwindcss";
-
-const config: Config = {
-  content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
-  theme: {
-    extend: {
-      colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-      },
-    },
-  },
-  plugins: [],
-};
-export default config;
-      `.trim();
-
-      // 5. Inject Missing Dependencies (Fixes "regenerator" Crash)
-      try {
-        let pkg;
-        const pkgData = fileTree['package.json'];
+        REQUIRED FILES:
+        - src/app/globals.css (Tailwind directives)
+        - src/app/layout.tsx (Root layout)
+        - src/app/page.tsx (The main landing page code)
         
-        // Handle String vs Object
-        if (typeof pkgData === 'object' && pkgData !== null) {
-          pkg = pkgData;
-        } else if (typeof pkgData === 'string') {
-          pkg = JSON.parse(pkgData);
-        } else {
-           // Fallback if missing
-           pkg = { dependencies: {}, scripts: { dev: "next dev" } };
-        }
+        Return a valid JSON object. DO NOT include configs (package.json, etc) again.
+      `;
 
-        pkg.dependencies = pkg.dependencies || {};
-        // Babel Runtimes
-        pkg.dependencies['@babel/runtime'] = 'latest';
-        pkg.dependencies['@babel/plugin-transform-runtime'] = 'latest';
-        // Tailwind essentials (in case AI forgot)
-        pkg.dependencies['tailwindcss'] = 'latest';
-        pkg.dependencies['postcss'] = 'latest';
-        pkg.dependencies['autoprefixer'] = 'latest';
+      const response2 = await model.invoke([
+        getSystemPrompt('typescript'), 
+        new HumanMessage(appPrompt)
+      ]);
 
-        fileTree['package.json'] = JSON.stringify(pkg, null, 2);
-        addLog('🛡️ SYSTEM: Config files overwritten with stable versions.');
-      } catch (e) {
-        console.error("Patch failed", e);
-      }
+      addLog('⚡ UI RECEIVED. Merging Systems...');
+      const appTree = await robustParse(response2.content as string, "Phase 2");
 
-      // 6. SANITIZER: Kill 'next/font' (Fixes Font Crash)
-      const layoutPath = 'src/app/layout.tsx';
-      if (fileTree[layoutPath] && fileTree[layoutPath].includes('next/font')) {
-        addLog('⚠️ DETECTED BANNED FONT. Sanitizing layout...');
-        fileTree[layoutPath] = `
-import './globals.css';
-export const metadata = { title: 'App', description: 'Generated by AI' };
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  );
-}
-        `.trim();
-      }
+      // MERGE & EXECUTE
+      const fullTree = { ...structureTree, ...appTree };
+
+      // Apply Safety Patches
+      applySafetyOverrides(fullTree, addLog);
 
       addLog('💾 FILESYSTEM: Writing files to virtual memory...');
-      await mountFiles(fileTree);
+      await mountFiles(fullTree);
       
-      // Update File Explorer State
-      const treeStruct = parseJsonToTree(fileTree);
+      const treeStruct = parseJsonToTree(fullTree);
       useFileStore.getState().setFileTree(treeStruct);
 
       addLog('✅ FILESYSTEM: Write Complete.');
-
       await startDevServer();
 
     } catch (error: any) {
       addLog(`❌ FATAL ERROR: ${error.message || error}`);
       console.error(error);
+      
+      // OPTIONAL: Load Backup if total failure
+      // addLog('🛡️ ENGAGING FALLBACK PROTOCOL...');
+      // await mountFiles(BACKUP_FILES);
+      // await startDevServer();
     } finally {
       setIsGenerating(false);
     }
   };
 
-  // const startDevServer = async () => {
-  //   const instance = await getWebContainerInstance();
-    
-  //   addLog('📦 PACKAGE MANAGER: Installing dependencies...');
-    
-  //   const installProcess = await instance.spawn('npm', [
-  //     'install', 
-  //     '--no-optional',
-  //     '--no-audit', 
-  //     '--prefer-offline',
-  //     '--no-fund', 
-  //     '--no-progress', 
-  //     '--loglevel=error'
-  //   ]);
-
-  //   installProcess.output.pipeTo(new WritableStream({
-  //     write(data) { 
-  //       if (!['|', '/', '-', '\\'].includes(data.trim())) {
-  //          addLog(`[npm]: ${data}`); 
-  //       }
-  //     }
-  //   }));
-
-  //   const installExitCode = await installProcess.exit;
-  //   if (installExitCode !== 0) {
-  //     addLog('❌ INSTALL FAILED: Dependency error. Check logs above.');
-  //     return;
-  //   }
-  //   addLog('✅ INSTALL COMPLETE.');
-
-  //   addLog('🚀 LAUNCHER: Starting Next.js Dev Server...');
-  //   const devProcess = await instance.spawn('npm', ['run', 'dev']);
-
-  //   devProcess.output.pipeTo(new WritableStream({
-  //     write(data) { addLog(`[Server]: ${data}`); }
-  //   }));
-
-  //   instance.on('server-ready', (port, url) => {
-  //     addLog(`🌐 SERVER ONLINE: App running at ${url}`);
-  //     setIframeUrl(url);
-  //     setActiveTab('preview');
-  //   });
-  // };
-
-
-
-  // -------------------------------------------------------------------------
-  // 🚀 ENGINE STARTER (WITH SMART CACHING)
-  // -------------------------------------------------------------------------
   const startDevServer = async () => {
     const instance = await getWebContainerInstance();
     
-    // 1. CHECK CACHE: Do we really need to install?
+    // Check if node_modules exists to skip install
     let shouldInstall = true;
     try {
       await instance.fs.readdir('node_modules');
-      shouldInstall = false; // Folder exists!
+      shouldInstall = false;
       addLog('⚡ SPEED MODE: "node_modules" detected. Skipping install.');
     } catch (error) {
-      // If readdir fails, it means node_modules doesn't exist.
       shouldInstall = true;
     }
 
-    // 2. INSTALL (Only if missing)
     if (shouldInstall) {
-      addLog('📦 PACKAGE MANAGER: Installing dependencies (First run only)...');
+      addLog('📦 PACKAGE MANAGER: Installing dependencies...');
       const installProcess = await instance.spawn('npm', [
         'install', 
-        '--no-optional',
-        '--no-audit', 
         '--prefer-offline',
-        '--no-fund', 
-        '--no-progress', 
-        '--loglevel=error'
+        '--no-audit',
+        '--no-progress'
       ]);
 
       installProcess.output.pipeTo(new WritableStream({
         write(data) { 
-          if (!['|', '/', '-', '\\'].includes(data.trim())) {
+          const ignored = ['|', '/', '-', '\\', 'swc', 'bad platform', 'skipping optional'];
+          if (!ignored.some(i => data.toLowerCase().includes(i))) {
              addLog(`[npm]: ${data}`); 
           }
         }
@@ -729,7 +983,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       addLog('✅ INSTALL COMPLETE.');
     }
 
-    // 3. START SERVER
     addLog('🚀 LAUNCHER: Starting Next.js Dev Server...');
     const devProcess = await instance.spawn('npm', ['run', 'dev']);
 
@@ -743,8 +996,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       setActiveTab('preview');
     });
   };
-
-
 
   return (
     <div className="flex h-screen w-full bg-neutral-950 text-white font-sans overflow-hidden">
@@ -802,10 +1053,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <div className="flex-1 bg-[#1e1e1e] relative">
           {activeTab === 'editor' ? (
-             <div className="absolute inset-0 flex items-center justify-center text-neutral-600 font-mono text-sm">
-               [Editor View - Files are in Memory] <br/>
-               (Select a file in the Explorer to view code)
-             </div>
+            <div className="absolute inset-0 bg-[#1e1e1e]">
+               <CodeEditor />
+            </div>
           ) : (
             <div className="absolute inset-0 bg-white">
               {iframeUrl ? (
