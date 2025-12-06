@@ -143,16 +143,11 @@
 
 
 
-
-
-
-
-
 const STABLE_NEXT_CONFIG = `
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: false, // ⚠️ CRITICAL: Forces Babel
+  swcMinify: false,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -205,7 +200,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 `.trim();
 
-// 🛑 STOP SWC DOWNLOADS GLOBALLY
 const NPM_RC_CONFIG = `
 optional=false
 audit=false
@@ -223,8 +217,6 @@ const REQUIRED_DEPENDENCIES = [
 ];
 
 export function applySafetyOverrides(fileTree: Record<string, any>, addLog: (msg: string) => void) {
-  // 1. CLEANUP: Delete conflicting configs
-  // If we are forcing next.config.mjs, we MUST delete next.config.js or it crashes
   if (fileTree['next.config.js']) {
     delete fileTree['next.config.js'];
     addLog('🗑️ Deleted conflicting next.config.js');
@@ -233,41 +225,33 @@ export function applySafetyOverrides(fileTree: Record<string, any>, addLog: (msg
     delete fileTree['tailwind.config.js'];
   }
 
-  // 2. INJECT: Force Global Configs
   fileTree['.npmrc'] = NPM_RC_CONFIG;
   fileTree['.babelrc'] = JSON.stringify({ presets: ["next/babel"] });
   fileTree['next.config.mjs'] = STABLE_NEXT_CONFIG;
   fileTree['postcss.config.js'] = STABLE_POSTCSS_CONFIG;
   fileTree['tailwind.config.ts'] = STABLE_TAILWIND_CONFIG;
 
-  // 3. PATCH: Sanitize package.json
   try {
       let pkg;
       const pkgData = fileTree['package.json'];
 
-      // Parse existing or create new
       if (typeof pkgData === 'object' && pkgData !== null) pkg = pkgData;
       else if (typeof pkgData === 'string') pkg = JSON.parse(pkgData);
       else pkg = {};
 
-      // Initialize sections
       pkg.dependencies = pkg.dependencies || {};
       pkg.devDependencies = pkg.devDependencies || {};
       pkg.scripts = pkg.scripts || { "dev": "next dev", "build": "next build", "start": "next start" };
       pkg.name = "ai-app";
 
-      // 🛡️ VERSION PINNING (The Downgrade Fix)
-      // Next.js 14.2+ is hostile to WebContainers. We pin 13.5.6 for stability.
-      pkg.dependencies['next'] = '13.5.6'; 
+      pkg.dependencies['next'] = '13.5.6';
       pkg.dependencies['react'] = '18.2.0';
       pkg.dependencies['react-dom'] = '18.2.0';
       
-      // Force Babel dependencies
       REQUIRED_DEPENDENCIES.forEach(dep => {
         pkg.dependencies[dep] = 'latest';
       });
 
-      // 🛡️ SWC KILLER LOOP
       const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
       Object.keys(allDeps).forEach(dep => {
           if (dep.includes('swc') || dep.includes('next-swc') || dep.includes('sharp')) {
@@ -282,7 +266,6 @@ export function applySafetyOverrides(fileTree: Record<string, any>, addLog: (msg
       console.error("Patch failed", error);
     }
 
-  // 4. SANITIZE: Layout File (Kill next/font)
   const layoutPath = 'src/app/layout.tsx';
   if (fileTree[layoutPath] && fileTree[layoutPath].includes('next/font')) {
     addLog('⚠️ DETECTED BANNED FONT. Sanitizing layout...');

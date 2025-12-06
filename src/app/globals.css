@@ -24,3 +24,42 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+
+
+
+
+
+::-webkit-scrollbar {
+  width: 6px;  /* Vertical width */
+  height: 6px; /* Horizontal height */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; 
+}
+
+/* The Scrollbar Thumb (The moving part) */
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1); /* Very subtle grey */
+  border-radius: 10px;
+}
+
+/* Hover State - Make it slightly brighter so user knows they grabbed it */
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2); 
+}
+
+/* Corner (where vertical meets horizontal) */
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ----------------------------------------------------------------------- */
+/* 🦊 FIREFOX SUPPORT */
+/* ----------------------------------------------------------------------- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
