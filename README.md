@@ -9,7 +9,7 @@
 
 BrowserIDE replaces the traditional cloud VM with **WebContainers**, allowing you to run `npm install` and `npm run dev` directly inside Chrome with zero latency. It features an integrated AI Copilot that can generate, refactor, and debug code across your entire file system.
 
-![Project Screenshot](./public/screenshot.png)
+![Project Screenshot](public/IDE.png)
 *(Note: Replace this with an actual screenshot of your IDE interface)*
 
 ---
