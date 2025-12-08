@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ⚡ BrowserIDE
 
-## Getting Started
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Next.js](https://img.shields.io/badge/Built%20With-Next.js-black)
+![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue)
+![WebContainers](https://img.shields.io/badge/Powered%20By-WebContainers-red)
 
-First, run the development server:
+**A browser-native IDE that boots a full Node.js container, runs a terminal, and deploys a live preview—all powered by AI.**
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+BrowserIDE replaces the traditional cloud VM with **WebContainers**, allowing you to run `npm install` and `npm run dev` directly inside Chrome with zero latency. It features an integrated AI Copilot that can generate, refactor, and debug code across your entire file system.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+![Project Screenshot](./public/screenshot.png)
+*(Note: Replace this with an actual screenshot of your IDE interface)*
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ✨ Key Features
 
-## Learn More
+### 🚀 **Browser-Native Node.js**
+Powered by [WebContainers](https://webcontainers.io/), this IDE boots a real Node.js environment inside your browser tab.
+- **Zero Latency:** No cloud connection required for command execution.
+- **Security:** Code runs in a sandboxed environment isolated from your local machine.
 
-To learn more about Next.js, take a look at the following resources:
+### 🤖 **AI-Powered Coding Assistant**
+An intelligent coding agent integrated directly into the workspace.
+- **Context-Aware:** The AI reads your virtual file system to understand your project structure.
+- **Full-File Generation:** Generates robust, production-ready code blocks (React components, API routes, configurations).
+- **Automated Refactoring:** Request changes in plain English (e.g., *"Convert this page to use Tailwind grid"*).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 💻 **Integrated Terminal**
+A fully functional zsh-like terminal using **xterm.js**.
+- Run standard commands: `npm install`, `npm run dev`, `node script.js`.
+- View server logs and build errors in real-time.
+- Supports colored output and ANSI escape codes.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 🌐 **Instant Live Preview**
+- **Hot Reloading:** See changes instantly as the AI writes code.
+- **Secure Iframe:** The running localhost server is piped securely to an embedded preview window.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🛠️ Tech Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Framework:** Next.js 14 (App Router)
+- **Language:** TypeScript
+- **Runtime:** WebContainers API (Node.js in browser)
+- **Terminal:** Xterm.js + FitAddon
+- **Styling:** Tailwind CSS
+- **Icons:** Lucide React
+- **State Management:** Zustand (for File Tree state)
+- **AI Model:** Google Gemini / Anthropic Claude (via API)
+
+---
+
+## 🚀 Getting Started
+
+Follow these steps to run the BrowserIDE locally.
+
+### Prerequisites
+- Node.js 18+ installed.
+- A modern browser (Chrome/Edge/Arc) that supports Cross-Origin Isolation.
+
+
