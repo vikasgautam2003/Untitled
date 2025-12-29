@@ -29,7 +29,16 @@ const submissionSchema = new mongoose.Schema(
 
         verdict: {
             type: String,
-            enum: ["Pending"],
+           enum: [
+                "Pending",
+                "Accepted",
+                "Wrong Answer",
+                "Runtime Error",
+                "Time Limit Exceeded",
+                "Memory Limit Exceeded"
+            ],
+
+
             default: "Pending"
         }
     }, {

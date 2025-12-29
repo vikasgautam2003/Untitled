@@ -1,6 +1,6 @@
 import Submission from "../models/submission.model.js";
 import Problem from "../models/problem.model.js";
-
+import { codeExecutionQueue } from "../queues/codeExecution.queue.js";
 
 
 
@@ -28,6 +28,10 @@ export const createSubmission = async (req, res) => {
             problemId: problem._id,
             language,
             code
+        });
+
+        await codeExecutionQueue.add("execute", {
+            submissionId: submission._id.toString()
         });
 
 
