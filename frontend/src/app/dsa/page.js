@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import api from "../../lib/api-client"
-import TopicCard from "./components/TopicCard";
+import TopicCard from "../../components/TopicCard";
 
 export default function DsaDashboard() 
 {

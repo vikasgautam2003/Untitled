@@ -86,20 +86,32 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
 
-    try {
-      const res = await loginUser({ email, password });
-      login(res.token);
-      router.push("/");
-    } catch {
-      setError("Invalid credentials");
-    } finally {
-      setLoading(false);
+  try {
+    const res = await loginUser({ email, password });
+
+    login(res.token);
+
+    const role = res.user.role;
+
+    if (role === "SUPER_ADMIN") {
+      router.push("/super-admin");
+    } else if (role === "ADMIN") {
+      router.push("/admin");
+    } else {
+      router.push("/user");
     }
-  };
+
+  } catch {
+    setError("Invalid credentials");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <>

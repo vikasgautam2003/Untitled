@@ -23,7 +23,7 @@ export default function SignupPage() {
     try {
       const res = await registerUser({ name, email, password });
       login(res.token);
-      router.push("/");
+      router.push("/user");
     } catch {
       setError("Account creation failed");
     } finally {

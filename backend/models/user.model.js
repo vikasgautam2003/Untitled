@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ["USER", "ADMIN", "SUPER_ADMIN"],
         default: "USER"
+    },
+    adminRequest: {
+        type: Boolean,
+        default: false
     }
     
 

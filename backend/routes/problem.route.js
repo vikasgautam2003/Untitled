@@ -3,32 +3,25 @@ import {
   createProblem,
   listProblems,
   getProblemBySlug,
-  getTopicSummary,
-  getProblemsByTopic
+  updateProblem,
+  deleteProblem,
+  getProblemsByTopic,
+  getTopicSummary
 } from "../controllers/problem.controller.js";
 
 import { requireAuth, requireRole } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-
-router.get("/topics/summary", getTopicSummary);
-
-
-router.get("/topic/:topic", getProblemsByTopic);
-
-
+// for users
 router.get("/", listProblems);
-
-// Problem detail
+router.get("/topics/summary", getTopicSummary);
+router.get("/topic/:topic", getProblemsByTopic);
 router.get("/:slug", getProblemBySlug);
 
-
-router.post(
-  "/",
-  requireAuth,
-  requireRole("ADMIN", "SUPER_ADMIN"),
-  createProblem
-);
+// now only for admins
+router.post("/", requireAuth, requireRole("ADMIN", "SUPER_ADMIN"), createProblem);
+router.put("/:id", requireAuth, requireRole("ADMIN", "SUPER_ADMIN"), updateProblem);
+router.delete("/:id", requireAuth, requireRole("ADMIN", "SUPER_ADMIN"), deleteProblem);
 
 export default router;

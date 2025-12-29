@@ -1,8 +1,11 @@
-export default function Home() {
+import React from 'react'
+
+function page() {
   return (
-    <main style={{ padding: "2rem" }}>
-      <h1>DevAscend</h1>
-      <p>Frontend foundation ready.</p>
-    </main>
-  );
+    <div>
+      Hello Home page
+    </div>
+  )
 }
+
+export default page

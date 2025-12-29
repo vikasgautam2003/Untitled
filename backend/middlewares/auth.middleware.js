@@ -4,7 +4,7 @@ import User from "../models/user.model.js";
 
 
 
-export const requireAuth = async (req, resizeBy, next) => {
+export const requireAuth = async (req, res, next) => {
 
     try{
 
