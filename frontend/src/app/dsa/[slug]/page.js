@@ -216,6 +216,11 @@ export default function ProblemDetail({ params }) {
 
   const [submissions, setSubmissions] = useState([]);
   const [loadingSubs, setLoadingSubs] = useState(false);
+  const [polling, setPolling] = useState(false);
+  const [hint, setHint] = useState(null);
+  const [loadingHint, setLoadingHint] = useState(false);
+
+
 
   useEffect(() => {
     if (!slug) return;
@@ -235,6 +240,30 @@ export default function ProblemDetail({ params }) {
     fetchSubmissions();
   }, [problem]);
 
+
+  useEffect(() => {
+  if (!polling || !problem?._id) return;
+
+  const interval = setInterval(async () => {
+    try {
+      const res = await api.get(`/submissions/problem/${problem._id}`);
+      setSubmissions(res.data);
+
+      const latest = res.data[0];
+      if (latest && latest.verdict !== "Pending") {
+        setPolling(false);
+        clearInterval(interval);
+      }
+    } catch (err) {
+      console.error("Polling failed");
+    }
+  }, 2000);
+
+  return () => clearInterval(interval);
+}, [polling, problem]);
+
+
+
   const handleSubmit = async () => {
     try {
       setSubmitting(true);
@@ -247,6 +276,8 @@ export default function ProblemDetail({ params }) {
       });
 
       setMessage("Submission received. Verdict: PENDING");
+      setPolling(true);
+
 
       const res = await api.get(`/submissions/problem/${problem._id}`);
       setSubmissions(res.data);
@@ -256,6 +287,23 @@ export default function ProblemDetail({ params }) {
       setSubmitting(false);
     }
   };
+
+
+   
+  const getHint = async () => {
+  try {
+    setLoadingHint(true);
+    const res = await api.post("/ai/hint", {
+      problemId: problem._id,
+      language,
+      code
+    });
+    setHint(res.data.hint);
+  } finally {
+    setLoadingHint(false);
+  }
+};
+
 
 
 
@@ -336,6 +384,19 @@ export default function ProblemDetail({ params }) {
           </div>
         ))}
       </section>
+      
+      <section className="border-t pt-6">
+        <button onClick={getHint} disabled={loadingHint}>
+          {loadingHint ? "Thinking..." : "Get Hint"}
+        </button>
+
+        {hint && (
+          <pre className="mt-3 p-3 bg-gray-100 rounded whitespace-pre-wrap">
+            {hint}
+          </pre>
+        )}
+      </section>
+
     </main>
   );
 }

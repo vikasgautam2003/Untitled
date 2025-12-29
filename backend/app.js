@@ -9,7 +9,7 @@ import superRoutes from "./routes/superAdmin.route.js"
 import userRoutes from "./routes/user.route.js";
 import progressRoutes from "./routes/progress.route.js";
 import submissionRoutes from "./routes/submission.routes.js";
-
+import aiRoutes from "./routes/ai.route.js"
 
 
 const app = express();
@@ -33,6 +33,7 @@ app.use("/api/admin", superRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/user/progress", progressRoutes);
 app.use("/api/submissions", submissionRoutes);
+app.use("/api/ai", aiRoutes);
 
 app.use(errorHandler);
 
