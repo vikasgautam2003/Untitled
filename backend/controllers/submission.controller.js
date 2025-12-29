@@ -8,6 +8,8 @@ export const createSubmission = async (req, res) => {
 
     try{
 
+        
+
         const { problemSlug, language, code } = req.body;
 
         if(!problemSlug || !language || !code)
@@ -29,6 +31,8 @@ export const createSubmission = async (req, res) => {
             language,
             code
         });
+
+        console.log("📦 Job enqueued for submission:", submission._id.toString());
 
         await codeExecutionQueue.add("execute", {
             submissionId: submission._id.toString()

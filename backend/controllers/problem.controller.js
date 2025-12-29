@@ -9,7 +9,8 @@ export const createProblem = async (req, res) => {
       !data.slug ||
       !data.topic ||
       !data.difficulty ||
-      !data.description
+      !data.description ||
+      !data.testCases
     ) {
       return res.status(400).json({ message: "Missing required fields" });
     }

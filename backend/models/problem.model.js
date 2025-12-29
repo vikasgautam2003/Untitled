@@ -54,6 +54,12 @@ const ProblemSchema = new mongoose.Schema(
       required: true
     },
 
+    testCases: [{
+  stdin: String,
+  expectedOutput: String
+}]
+,
+
     examples: [
       {
         input: { type: String, required: true },

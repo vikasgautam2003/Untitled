@@ -1,46 +1,179 @@
+// import { Worker } from "bullmq";
+// import redis from "../config/redis.js";
+// import Submission from "../models/submission.model.js";
+// import Problem from "../models/problem.model.js";
+// import { ENV } from "../config/env.js";
+// import mongoose from "mongoose";
+// import { executeWithPiston } from "../lib/piston.js";
+// import { normalizeOutput } from "../lib/normalize.js";
+
+// await mongoose.connect(ENV.MONGO_URI);
+
+// console.log("✅ Worker connected to MongoDB");
+
+// const worker = new Worker(
+//   "code-execution",
+//   async job => {
+//     console.log("🔥 Job received:", job.name, job.data);
+
+//     const { submissionId } = job.data;
+
+//     const submission = await Submission.findById(submissionId);
+//     if (!submission) return;
+
+//     const problem = await Problem.findById(submission.problemId);
+//     if (!problem) return;
+
+//     const testCases = problem.testCases;
+
+//     if (!Array.isArray(testCases) || testCases.length === 0) {
+//       await Submission.findByIdAndUpdate(submissionId, {
+//         verdict: "Wrong Answer"
+//       });
+//       return;
+//     }
+
+//     try {
+//       for (const tc of testCases) {
+//         const result = await executeWithPiston({
+//           language: submission.language,
+//           code: submission.code,
+//           stdin: tc.stdin || ""
+//         });
+
+//         if (result.run.stderr && result.run.stderr.length > 0) {
+//           await Submission.findByIdAndUpdate(submissionId, {
+//             verdict: "Runtime Error"
+//           });
+//           return;
+//         }
+
+//         const actual = normalizeOutput(result.run.stdout);
+//         const expected = normalizeOutput(tc.expectedOutput);
+
+//         if (actual !== expected) {
+//           await Submission.findByIdAndUpdate(submissionId, {
+//             verdict: "Wrong Answer"
+//           });
+//           return;
+//         }
+//       }
+
+//       await Submission.findByIdAndUpdate(submissionId, {
+//         verdict: "Accepted"
+//       });
+
+//     } catch (err) {
+//       console.error(err);
+//       await Submission.findByIdAndUpdate(submissionId, {
+//         verdict: "Runtime Error"
+//       });
+//     }
+//   },
+//   { connection: redis }
+// );
+
+// export default worker;
+
+
+
+
+
+
+
+
+
 import { Worker } from "bullmq";
 import redis from "../config/redis.js";
 import Submission from "../models/submission.model.js";
+import Problem from "../models/problem.model.js";
 import { ENV } from "../config/env.js";
 import mongoose from "mongoose";
+import { executeWithPiston } from "../lib/piston.js";
+import { normalizeOutput } from "../lib/normalize.js";
 
-// 🔑 CONNECT TO MONGODB (CRITICAL)
 await mongoose.connect(ENV.MONGO_URI);
 
 console.log("✅ Worker connected to MongoDB");
 
-
-
 const worker = new Worker(
-    "code-execution",
+  "code-execution",
+  async job => {
+    console.log("🔥 Job received:", job.name, job.data);
 
-    async job => {
-       
-        console.log("Processing job:", job.id, job.name, job.data);
+    const { submissionId } = job.data;
 
-        const { submissionId } = job.data;
+    const submission = await Submission.findById(submissionId);
+    if (!submission) return;
 
-        await new Promise(resolve => setTimeout(resolve, 2000));
+    const problem = await Problem.findById(submission.problemId);
+    if (!problem) return;
 
-        if(submissionId)
-        {
-            await Submission.findByIdAndUpdate(submissionId, { verdict: "Accepted" }, { runValidators: true });
+    const testCases = problem.testCases;
+
+    if (!Array.isArray(testCases) || testCases.length === 0) {
+      await Submission.findByIdAndUpdate(submissionId, {
+        verdict: "Wrong Answer",
+        testResults: []
+      });
+      return;
+    }
+
+    const results = [];
+
+    try {
+      for (let i = 0; i < testCases.length; i++) {
+        const tc = testCases[i];
+
+        const result = await executeWithPiston({
+          language: submission.language,
+          code: submission.code,
+          stdin: tc.stdin || ""
+        });
+
+        if (result.run.stderr && result.run.stderr.length > 0) {
+          await Submission.findByIdAndUpdate(submissionId, {
+            verdict: "Runtime Error",
+            testResults: results
+          });
+          return;
         }
 
-        return { success: true};
-    }, {
-    connection: redis
-  }
+        const actual = normalizeOutput(result.run.stdout);
+        const expected = normalizeOutput(tc.expectedOutput);
 
-)
+        const passed = actual === expected;
 
+        results.push({
+          index: i,
+          passed,
+          actual,
+          expected
+        });
 
-worker.on("completed", job => {
-  console.log(`Job ${job.id} completed`);
-});
+        if (!passed) {
+          await Submission.findByIdAndUpdate(submissionId, {
+            verdict: "Wrong Answer",
+            testResults: results
+          });
+          return;
+        }
+      }
 
-worker.on("failed", (job, err) => {
-  console.error(`Job ${job?.id} failed`, err);
-});
+      await Submission.findByIdAndUpdate(submissionId, {
+        verdict: "Accepted",
+        testResults: results
+      });
+
+    } catch (err) {
+      console.error(err);
+      await Submission.findByIdAndUpdate(submissionId, {
+        verdict: "Runtime Error",
+        testResults: results
+      });
+    }
+  },
+  { connection: redis }
+);
 
 export default worker;
