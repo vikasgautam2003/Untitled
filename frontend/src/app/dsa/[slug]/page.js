@@ -217,9 +217,10 @@ export default function ProblemDetail({ params }) {
   const [submissions, setSubmissions] = useState([]);
   const [loadingSubs, setLoadingSubs] = useState(false);
   const [polling, setPolling] = useState(false);
-  const [hint, setHint] = useState(null);
-  const [loadingHint, setLoadingHint] = useState(false);
 
+  const [hint, setHint] = useState(null);
+  const [hintMeta, setHintMeta] = useState(null);
+  const [loadingHint, setLoadingHint] = useState(false);
 
 
   useEffect(() => {
@@ -299,6 +300,9 @@ export default function ProblemDetail({ params }) {
       code
     });
     setHint(res.data.hint);
+    setHintMeta({ level: res.data.level, remaining: res.data.remaining });
+  } catch (e) {
+    setHint("No more hints available.");
   } finally {
     setLoadingHint(false);
   }
@@ -386,16 +390,22 @@ export default function ProblemDetail({ params }) {
       </section>
       
       <section className="border-t pt-6">
-        <button onClick={getHint} disabled={loadingHint}>
-          {loadingHint ? "Thinking..." : "Get Hint"}
-        </button>
+  <button onClick={getHint} disabled={loadingHint}>
+    {loadingHint ? "Thinking..." : "Get Hint"}
+  </button>
 
-        {hint && (
-          <pre className="mt-3 p-3 bg-gray-100 rounded whitespace-pre-wrap">
-            {hint}
-          </pre>
-        )}
-      </section>
+  {hint && (
+    <div className="mt-3">
+      <pre className="p-3 bg-gray-100 rounded whitespace-pre-wrap">{hint}</pre>
+      {hintMeta && (
+        <div className="text-sm text-gray-600 mt-1">
+          Hint {hintMeta.level} of 3 · {hintMeta.remaining} remaining
+        </div>
+      )}
+    </div>
+  )}
+</section>
+
 
     </main>
   );
