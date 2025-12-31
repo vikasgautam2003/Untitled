@@ -4,21 +4,15 @@ import { useEffect, useState } from "react";
 import api from "../../lib/api-client";
 
 export default function UserDashboard() {
-  /* -----------------------------
-     Progress summary state
-  ----------------------------- */
+  
   const [progress, setProgress] = useState(null);
   const [progressLoading, setProgressLoading] = useState(true);
 
-  /* -----------------------------
-     Admin request state
-  ----------------------------- */
+  
   const [requestLoading, setRequestLoading] = useState(false);
   const [requestStatus, setRequestStatus] = useState(null); // success | error
 
-  /* -----------------------------
-     Load progress summary
-  ----------------------------- */
+ 
   useEffect(() => {
     api
       .get("/api/user/progress/summary")
@@ -27,9 +21,7 @@ export default function UserDashboard() {
       .finally(() => setProgressLoading(false));
   }, []);
 
-  /* -----------------------------
-     Request admin access
-  ----------------------------- */
+
   const requestAdmin = async () => {
     try {
       setRequestLoading(true);
@@ -47,9 +39,7 @@ export default function UserDashboard() {
 
   return (
     <main className="max-w-2xl mx-auto px-6 py-10 space-y-8">
-      {/* =============================
-          Progress Summary
-      ============================= */}
+      
       <section className="border rounded-md p-4">
         <h2 className="text-sm font-semibold mb-2">Your Progress</h2>
 
