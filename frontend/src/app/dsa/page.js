@@ -9,7 +9,7 @@ export default function DsaDashboard()
     const [topics, setTopics] = useState([]);
 
     useEffect(() => {
-        api.get("/problems/topics/summary")
+        api.get("/api/problems/topics/summary")
         .then(res => setTopics(res.data));
     }, []);
 

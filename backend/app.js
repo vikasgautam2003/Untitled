@@ -10,6 +10,8 @@ import userRoutes from "./routes/user.route.js";
 import progressRoutes from "./routes/progress.route.js";
 import submissionRoutes from "./routes/submission.routes.js";
 import aiRoutes from "./routes/ai.route.js"
+import solutionRoutes from "./routes/solution.routes.js"
+import codeReviewRoutes from "./routes/codeReview.routes.js"
 
 
 const app = express();
@@ -34,6 +36,9 @@ app.use("/api/user", userRoutes);
 app.use("/api/user/progress", progressRoutes);
 app.use("/api/submissions", submissionRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/solutions", solutionRoutes);
+app.use("/api/code-review", codeReviewRoutes);
+
 
 app.use(errorHandler);
 

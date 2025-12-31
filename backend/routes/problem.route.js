@@ -13,7 +13,7 @@ import { requireAuth, requireRole } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-// for users
+
 router.get("/", listProblems);
 router.get("/topics/summary", getTopicSummary);
 router.get("/topic/:topic", getProblemsByTopic);

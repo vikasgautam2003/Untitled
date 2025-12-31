@@ -47,7 +47,7 @@ export default function TopicProblems({ params }) {
   const [problems, setProblems] = useState([]);
 
   useEffect(() => {
-    api.get(`/problems/topic/${topic}`)
+    api.get(`/api/problems/topic/${topic}`)
       .then(res => setProblems(res.data));
   }, [topic]);
 

@@ -10,6 +10,8 @@ export const redis = new Redis(ENV.REDIS_URL, {
 
 redis.on("connect", () => {
   console.log("✅ Redis connected");
+  console.log("🧠 Redis maxRetriesPerRequest =", redis.options.maxRetriesPerRequest);
+
 });
 
 

@@ -21,7 +21,7 @@ export default function UserDashboard() {
   ----------------------------- */
   useEffect(() => {
     api
-      .get("/user/progress/summary")
+      .get("/api/user/progress/summary")
       .then(res => setProgress(res.data))
       .catch(() => setProgress(null))
       .finally(() => setProgressLoading(false));
@@ -35,7 +35,7 @@ export default function UserDashboard() {
       setRequestLoading(true);
       setRequestStatus(null);
 
-      await api.post("/user/request-admin");
+      await api.post("/api/user/request-admin");
 
       setRequestStatus("success");
     } catch {

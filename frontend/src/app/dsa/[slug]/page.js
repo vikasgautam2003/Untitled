@@ -203,6 +203,7 @@
 import { useEffect, useState, use } from "react";
 import api from "../../../lib/api-client";
 import Editor from "@monaco-editor/react";
+import SolutionGate from "../../../components/solutions/SolutionGate";
 
 
 export default function ProblemDetail({ params }) {
@@ -225,7 +226,7 @@ export default function ProblemDetail({ params }) {
 
   useEffect(() => {
     if (!slug) return;
-    api.get(`/problems/${slug}`).then(res => setProblem(res.data));
+    api.get(`/api/problems/${slug}`).then(res => setProblem(res.data));
   }, [slug]);
 
   useEffect(() => {
@@ -233,7 +234,7 @@ export default function ProblemDetail({ params }) {
 
     const fetchSubmissions = async () => {
       setLoadingSubs(true);
-      const res = await api.get(`/submissions/problem/${problem._id}`);
+      const res = await api.get(`/api/submissions/problem/${problem._id}`);
       setSubmissions(res.data);
       setLoadingSubs(false);
     };
@@ -247,7 +248,7 @@ export default function ProblemDetail({ params }) {
 
   const interval = setInterval(async () => {
     try {
-      const res = await api.get(`/submissions/problem/${problem._id}`);
+      const res = await api.get(`/api/submissions/problem/${problem._id}`);
       setSubmissions(res.data);
 
       const latest = res.data[0];
@@ -270,7 +271,7 @@ export default function ProblemDetail({ params }) {
       setSubmitting(true);
       setMessage(null);
 
-      await api.post("/submissions", {
+      await api.post("/api/submissions", {
         problemSlug: slug,
         language,
         code
@@ -280,7 +281,7 @@ export default function ProblemDetail({ params }) {
       setPolling(true);
 
 
-      const res = await api.get(`/submissions/problem/${problem._id}`);
+      const res = await api.get(`/api/submissions/problem/${problem._id}`);
       setSubmissions(res.data);
     } catch {
       setMessage("Submission failed");
@@ -294,7 +295,7 @@ export default function ProblemDetail({ params }) {
   const getHint = async () => {
   try {
     setLoadingHint(true);
-    const res = await api.post("/ai/hint", {
+    const res = await api.post("/api/ai/hint", {
       problemId: problem._id,
       language,
       code
@@ -405,6 +406,14 @@ export default function ProblemDetail({ params }) {
     </div>
   )}
 </section>
+<section className="mt-10">
+  <h2 className="text-xl font-semibold mb-3">
+    Optimal Solution
+  </h2>
+
+  <SolutionGate problemId={problem._id} />
+</section>
+
 
 
     </main>
