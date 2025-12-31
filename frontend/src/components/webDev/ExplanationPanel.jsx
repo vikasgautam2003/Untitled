@@ -1,8 +1,13 @@
 "use client";
 
+import { useState } from "react";
+
 export default function ExplanationPanel({ data }) {
+  const [openIndex, setOpenIndex] = useState(null);
+
   return (
     <div className="space-y-6 text-sm leading-relaxed">
+
       <div>
         <strong>Category:</strong> {data.category}
       </div>
@@ -25,6 +30,32 @@ export default function ExplanationPanel({ data }) {
           ))}
         </ul>
       </div>
+
+      {data.subConcepts && data.subConcepts.length > 0 && (
+        <div>
+          <strong>Key ideas (click to explore)</strong>
+          <ul className="mt-2 space-y-1">
+            {data.subConcepts.map((s, i) => (
+              <li key={i}>
+                <button
+                  onClick={() =>
+                    setOpenIndex(openIndex === i ? null : i)
+                  }
+                  className="text-left text-blue-400 hover:underline"
+                >
+                  {s.title}
+                </button>
+
+                {openIndex === i && (
+                  <p className="mt-1 ml-3 text-gray-300">
+                    {s.explanation}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div>
         <strong>Common confusions</strong>
