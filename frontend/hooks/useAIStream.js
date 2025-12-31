@@ -2,20 +2,21 @@
 
 import { useState } from "react";
 
+const END_MARKER = "<!-- END_COMPONENT -->";
+
 export function useAIStream() {
-  const [code, setCode] = useState("");
+  const [streamedCode, setStreamedCode] = useState("");
+  const [finalCode, setFinalCode] = useState(null);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [canPreview, setCanPreview] = useState(false);
 
   const startStream = async (prompt) => {
-    setCode("");
+    setStreamedCode("");
+    setFinalCode(null);
+    setCanPreview(false);
     setIsStreaming(true);
 
     const token = localStorage.getItem("token");
-
-    if (!token) {
-      setIsStreaming(false);
-      throw new Error("User not authenticated");
-    }
 
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/web-dev/generate`,
@@ -29,29 +30,35 @@ export function useAIStream() {
       }
     );
 
-    if (!res.ok) {
-      setIsStreaming(false);
-      const err = await res.json();
-      throw new Error(err.message || "Request failed");
-    }
-
     const reader = res.body.getReader();
-    const decoder = new TextDecoder();
+    const decoder = new TextDecoder("utf-8");
+
+    let buffer = "";
 
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
 
-      const chunk = decoder.decode(value);
-      setCode(prev => prev + chunk);
+      const chunk = decoder.decode(value, { stream: true });
+      buffer += chunk;
+      setStreamedCode(buffer);
+
+      if (buffer.includes(END_MARKER)) {
+        const clean = buffer.replace(END_MARKER, "").trim();
+        setFinalCode(clean);
+        setCanPreview(true);
+        break;
+      }
     }
 
     setIsStreaming(false);
   };
 
   return {
-    streamedCode: code,
+    streamedCode,
+    finalCode,
     isStreaming,
+    canPreview,
     startStream
   };
 }
