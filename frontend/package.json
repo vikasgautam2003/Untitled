@@ -14,6 +14,8 @@
     "@langchain/langgraph": "^1.0.7",
     "@monaco-editor/react": "^4.7.0",
     "axios": "^1.13.2",
+    "grok-sdk": "^0.0.1-security",
+    "groq-sdk": "^0.37.0",
     "langchain": "^1.2.3",
     "next": "16.1.1",
     "react": "19.2.3",

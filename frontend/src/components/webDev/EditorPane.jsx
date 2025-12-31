@@ -14,15 +14,24 @@ const SAMPLE_CODE = `export default function SampleCard() {
 }`;
 
 
-export default function EditorPane({ code }) {
+
+export default function EditorPane({
+  code,
+  isStreaming,
+  isEditable,
+  onChange
+}) {
   return (
     <Editor
       height="100%"
       language="javascript"
       theme="vs-dark"
-      value={code}
+      value={code || ""}
+      onChange={value => {
+        if (isEditable && onChange) onChange(value ?? "");
+      }}
       options={{
-        readOnly: true,
+        readOnly: isStreaming || !isEditable,
         minimap: { enabled: false },
         fontSize: 14,
         scrollBeyondLastLine: false
