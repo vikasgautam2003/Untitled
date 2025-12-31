@@ -12,7 +12,7 @@ import submissionRoutes from "./routes/submission.routes.js";
 import aiRoutes from "./routes/ai.route.js"
 import solutionRoutes from "./routes/solution.routes.js"
 import codeReviewRoutes from "./routes/codeReview.routes.js"
-
+import webDevRoutes from "./routes/webDev.route.js"
 
 const app = express();
 
@@ -38,6 +38,8 @@ app.use("/api/submissions", submissionRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/solutions", solutionRoutes);
 app.use("/api/code-review", codeReviewRoutes);
+app.use("/api/web-dev", webDevRoutes);
+
 
 
 app.use(errorHandler);

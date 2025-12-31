@@ -14,13 +14,13 @@ const SAMPLE_CODE = `export default function SampleCard() {
 }`;
 
 
-export default function EditorPane() {
+export default function EditorPane({ code }) {
   return (
     <Editor
       height="100%"
       language="javascript"
       theme="vs-dark"
-      value={SAMPLE_CODE}
+      value={code}
       options={{
         readOnly: true,
         minimap: { enabled: false },
