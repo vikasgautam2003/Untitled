@@ -81,8 +81,11 @@ export default function ExplanationPanel({ data }) {
               </div>
 
               <blockquote className="border-l-2 border-gray-600 pl-3 text-gray-300 italic">
-                {d.excerpt}
-              </blockquote>
+  {Array.isArray(d.excerpt)
+    ? d.excerpt.join(" ")
+    : String(d.excerpt || "")}
+</blockquote>
+
 
               <p className="mt-2 text-gray-200">
                 {d.explanation}
@@ -100,6 +103,27 @@ export default function ExplanationPanel({ data }) {
           ))}
         </div>
       )}
+
+      {data.whatIfScenarios?.length > 0 && (
+  <div className="space-y-3">
+    <strong>What if…</strong>
+
+    {data.whatIfScenarios.map((w) => (
+      <details
+        key={w.id}
+        className="border border-gray-700 rounded bg-[#0f0f0f] p-3"
+      >
+        <summary className="cursor-pointer text-blue-400 hover:underline">
+          {w.label}
+        </summary>
+
+        <p className="mt-2 text-gray-200">
+          {w.explanation}
+        </p>
+      </details>
+    ))}
+  </div>
+)}
 
 
       {data.tinyExample && (

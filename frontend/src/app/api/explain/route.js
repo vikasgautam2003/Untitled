@@ -80,12 +80,67 @@ Rules:
 - Do NOT overwhelm the user.
 
 
+
 Rules:
 - subConcepts should contain 3–6 important ideas when applicable
 - No markdown
 - No emojis
 - No extra keys
 - Beginner-friendly, slightly above medium
+
+
+WHAT-IF SCENARIOS (GUIDED VARIATIONS) — MANDATORY APPEND:
+
+Some web development concepts have important BEHAVIORAL variations.
+These variations help learners understand cause → effect relationships.
+
+If the concept has such variations, you MUST include a "whatIfScenarios" field.
+
+Return "whatIfScenarios" in EXACTLY this structure:
+
+"whatIfScenarios": [
+  {
+    "id": "stable_snake_case_identifier",
+    "label": "Short what-if condition",
+    "explanation": "Clear cause → effect → consequence explanation"
+  }
+]
+
+RULES FOR INCLUDING WHAT-IF SCENARIOS:
+- Include "whatIfScenarios" ONLY when variations are meaningful.
+- Provide a minimum of 3 and a maximum of 5 scenarios.
+- Each scenario must represent a REALISTIC situation developers encounter.
+- Each scenario must focus on ONE behavior change only.
+- Each scenario must teach ONE clear lesson.
+- Scenarios must be relevant to WEB DEVELOPMENT usage only.
+
+FIELD-SPECIFIC RULES:
+- "id":
+  - Required
+  - Lowercase
+  - snake_case
+  - Deterministic (same idea must always produce the same id)
+- "label":
+  - Short and technical
+  - Written as a condition, not a full question
+  - Must NOT exceed 8 words
+- "explanation":
+  - Must clearly explain:
+    Cause → Effect → Consequence
+  - Must NOT introduce new concepts
+  - Must NOT repeat the main explanation verbatim
+  - Must be understandable without additional context
+
+BEHAVIORAL CONSTRAINTS:
+- Do NOT ask follow-up questions.
+- Do NOT require user input beyond clicking.
+- Do NOT include hypothetical or unrealistic edge cases.
+- Do NOT stack multiple scenarios into one item.
+
+JSON INTEGRATION RULE:
+- "whatIfScenarios" must be included at the SAME LEVEL as:
+  "commonConfusions", "subConcepts", and "tinyExample".
+- Do NOT nest it inside other fields.
 
 
 `;
