@@ -66,6 +66,42 @@ export default function ExplanationPanel({ data }) {
         </ul>
       </div>
 
+
+         {data.docExcerpts?.length > 0 && (
+        <div className="space-y-4">
+          <strong>From the official docs</strong>
+
+          {data.docExcerpts.map((d, i) => (
+            <div
+              key={i}
+              className="border border-gray-700 bg-[#0f0f0f] rounded p-3"
+            >
+              <div className="text-xs text-gray-400 mb-2">
+                {d.source}
+              </div>
+
+              <blockquote className="border-l-2 border-gray-600 pl-3 text-gray-300 italic">
+                {d.excerpt}
+              </blockquote>
+
+              <p className="mt-2 text-gray-200">
+                {d.explanation}
+              </p>
+
+              <a
+                href={d.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-2 text-blue-400 hover:underline text-xs"
+              >
+                Read more in docs ↗
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
+
+
       {data.tinyExample && (
         <div>
           <strong>Small example</strong>

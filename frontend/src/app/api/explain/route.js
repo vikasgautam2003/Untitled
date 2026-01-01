@@ -65,6 +65,21 @@ If NO:
   ]
 }
 
+
+If the concept has official documentation:
+
+- Include a "docExcerpts" field.
+- Each excerpt must be SHORT (1–3 sentences).
+- Excerpts must come from OFFICIAL documentation only.
+- After each excerpt, explain in plain English what it means.
+- Provide at most 2 excerpts.
+
+Rules:
+- Do NOT paste large sections.
+- Do NOT include unofficial blogs.
+- Do NOT overwhelm the user.
+
+
 Rules:
 - subConcepts should contain 3–6 important ideas when applicable
 - No markdown
