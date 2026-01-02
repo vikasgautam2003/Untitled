@@ -7,7 +7,7 @@ You MUST NOT rewrite it.
 You MUST NOT provide alternative solutions.
 
 Return ONLY valid JSON.
-No markdown. No extra text.
+ markdown. No extra text.
 
 Schema:
 {

@@ -13,8 +13,6 @@ const SAMPLE_CODE = `export default function SampleCard() {
   );
 }`;
 
-
-
 export default function EditorPane({
   code,
   isStreaming,
@@ -25,7 +23,7 @@ export default function EditorPane({
     <Editor
       height="100%"
       language="javascript"
-      theme="vs-dark"
+      theme="vs"
       value={code || ""}
       onChange={value => {
         if (isEditable && onChange) onChange(value ?? "");
@@ -33,8 +31,20 @@ export default function EditorPane({
       options={{
         readOnly: isStreaming || !isEditable,
         minimap: { enabled: false },
-        fontSize: 14,
-        scrollBeyondLastLine: false
+        fontSize: 15,
+        lineHeight: 22,
+        scrollBeyondLastLine: false,
+        smoothScrolling: true,
+        cursorSmoothCaretAnimation: "on",
+        roundedSelection: true,
+        padding: { top: 12, bottom: 12 },
+        scrollbar: {
+          verticalScrollbarSize: 10,
+          horizontalScrollbarSize: 10
+        },
+        overviewRulerBorder: false,
+        renderLineHighlight: "all",
+        renderWhitespace: "none"
       }}
     />
   );

@@ -62,13 +62,11 @@
 
 
 
-
-
-
 "use client";
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { Trash2, AlertTriangle, XCircle, CheckCircle2 } from "lucide-react"; // Optional: using Lucide icons for consistency if available, otherwise SVGs are fine. Keeping SVGs for safety as per instruction.
 
 export default function AdminProblemRow({ problem, onDeleted }) {
   const [showConfirm, setShowConfirm] = useState(false);
@@ -126,34 +124,34 @@ export default function AdminProblemRow({ problem, onDeleted }) {
   const getDifficultyColor = (diff) => {
     switch (diff?.toLowerCase()) {
       case "easy":
-        return "text-emerald-400 bg-emerald-400/10 border-emerald-400/20";
+        return "text-emerald-700 bg-emerald-50 border-emerald-200 ring-1 ring-emerald-600/20";
       case "medium":
-        return "text-yellow-400 bg-yellow-400/10 border-yellow-400/20";
+        return "text-amber-700 bg-amber-50 border-amber-200 ring-1 ring-amber-600/20";
       case "hard":
-        return "text-red-400 bg-red-400/10 border-red-400/20";
+        return "text-rose-700 bg-rose-50 border-rose-200 ring-1 ring-rose-600/20";
       default:
-        return "text-slate-400 bg-slate-400/10 border-slate-400/20";
+        return "text-slate-600 bg-slate-50 border-slate-200 ring-1 ring-slate-400/20";
     }
   };
 
   return (
     <>
-      <tr className="hover:bg-white/5 transition-colors group relative">
+      <tr className="border-b border-gray-100 hover:bg-gray-50/80 transition-colors group relative">
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="text-sm font-medium text-white">
+          <div className="text-sm font-semibold text-slate-900">
             {problem.title}
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="flex items-center">
-            <div className="text-sm text-slate-400 bg-[#0B1121] px-2.5 py-1 rounded-md border border-white/10 shadow-sm">
+            <div className="text-xs font-medium text-slate-600 bg-white px-2.5 py-1 rounded-md border border-gray-200 shadow-sm">
               {problem.topic}
             </div>
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <span
-            className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${getDifficultyColor(
+            className={`px-2.5 py-1 inline-flex text-xs leading-5 font-bold rounded-full border ${getDifficultyColor(
               problem.difficulty
             )}`}
           >
@@ -163,7 +161,7 @@ export default function AdminProblemRow({ problem, onDeleted }) {
         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
           <button
             onClick={handleDeleteClick}
-            className="text-red-400 hover:text-red-300 transition-colors opacity-0 group-hover:opacity-100 flex items-center gap-1.5 ml-auto px-3 py-1.5 rounded-lg hover:bg-red-500/10"
+            className="text-slate-400 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 flex items-center gap-1.5 ml-auto px-3 py-1.5 rounded-lg hover:bg-red-50"
           >
             <svg
               className="w-4 h-4"
@@ -183,20 +181,20 @@ export default function AdminProblemRow({ problem, onDeleted }) {
         </td>
       </tr>
 
+      {/* CONFIRMATION MODAL */}
       {mounted &&
         showConfirm &&
         createPortal(
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             <div
-              className="absolute inset-0 bg-[#02040a]/80 backdrop-blur-sm animate-in fade-in duration-300"
+              className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm animate-in fade-in duration-300"
               onClick={handleCancel}
             />
-            <div className="relative w-full max-w-md bg-[#0a0a0a] rounded-2xl border border-red-500/20 shadow-[0_0_50px_rgba(220,38,38,0.4)] overflow-hidden animate-in zoom-in-95 duration-300">
-              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-red-600 via-red-500 to-red-600" />
+            <div className="relative w-full max-w-md bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
               <div className="p-8 flex flex-col items-center text-center">
-                <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mb-6 ring-1 ring-red-500/20 shadow-[0_0_20px_rgba(239,68,68,0.2)]">
+                <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-6 ring-4 ring-red-50">
                   <svg
-                    className="w-10 h-10 text-red-500"
+                    className="w-8 h-8 text-red-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -204,38 +202,35 @@ export default function AdminProblemRow({ problem, onDeleted }) {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth={1.5}
+                      strokeWidth={2}
                       d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                     />
                   </svg>
                 </div>
 
-                <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">
+                <h3 className="text-xl font-bold text-slate-900 mb-2 tracking-tight">
                   Delete "{problem.title}"?
                 </h3>
 
-                <div className="bg-red-500/5 border border-red-500/10 rounded-xl p-4 mb-8 w-full">
-                  <p className="text-sm text-red-200/80 font-medium">
-                    Warning: This action is permanent. All data associated with
-                    this problem will be wiped immediately.
-                  </p>
-                </div>
+                <p className="text-slate-500 mb-6 text-sm">
+                   Are you sure you want to delete this problem? This action cannot be undone and will remove the data from student dashboards.
+                </p>
 
                 <div className="flex items-center gap-3 w-full">
                   <button
                     onClick={handleCancel}
                     disabled={isDeleting}
-                    className="flex-1 py-3.5 px-4 rounded-xl bg-white/5 text-slate-300 font-semibold hover:bg-white/10 hover:text-white transition-all disabled:opacity-50"
+                    className="flex-1 py-2.5 px-4 rounded-xl bg-white border border-gray-300 text-slate-700 font-semibold hover:bg-gray-50 transition-all disabled:opacity-50 shadow-sm"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={performDelete}
                     disabled={isDeleting}
-                    className="flex-1 py-3.5 px-4 rounded-xl bg-red-600 text-white font-bold hover:bg-red-500 shadow-lg shadow-red-600/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:transform-none flex items-center justify-center gap-2"
+                    className="flex-1 py-2.5 px-4 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 shadow-md shadow-red-200 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:transform-none flex items-center justify-center gap-2"
                   >
                     {isDeleting ? (
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
                       "Delete Forever"
                     )}
@@ -247,13 +242,14 @@ export default function AdminProblemRow({ problem, onDeleted }) {
           document.body
         )}
 
+      {/* NOTIFICATION TOAST */}
       {mounted &&
         notification &&
         createPortal(
-          <div className="fixed top-6 right-6 z-[10000] bg-[#1a1a1a] border border-red-500/30 text-white px-5 py-4 rounded-xl shadow-2xl flex items-center gap-4 animate-in slide-in-from-right-10 duration-300">
-            <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-500">
+          <div className="fixed top-6 right-6 z-[10000] bg-white border border-red-100 text-slate-800 px-5 py-4 rounded-xl shadow-lg flex items-start gap-4 animate-in slide-in-from-right-10 duration-300 max-w-sm">
+            <div className="w-6 h-6 rounded-full bg-red-50 flex-shrink-0 flex items-center justify-center text-red-600 mt-0.5">
               <svg
-                className="w-5 h-5"
+                className="w-4 h-4"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -267,8 +263,8 @@ export default function AdminProblemRow({ problem, onDeleted }) {
               </svg>
             </div>
             <div>
-              <h4 className="font-bold text-sm">System Error</h4>
-              <p className="text-xs text-red-200/70 mt-0.5">
+              <h4 className="font-bold text-sm text-red-700">System Error</h4>
+              <p className="text-xs text-slate-500 mt-1">
                 {notification.message}
               </p>
             </div>

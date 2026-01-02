@@ -30,7 +30,6 @@ app.use(globalRateLimiter);
 app.use("/api", healthRoute);
 app.use("/api/auth", authRoutes);
 app.use("/api/problems", problemRoutes)
-console.log("Admin routes mounted");
 app.use("/api/admin", superRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/user/progress", progressRoutes);

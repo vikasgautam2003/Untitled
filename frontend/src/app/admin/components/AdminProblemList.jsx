@@ -76,51 +76,55 @@ export default function AdminProblemList() {
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-6 px-2">
-        <h2 className="text-lg font-bold text-white tracking-tight">
+      {/* List Header */}
+      <div className="flex items-center justify-between mb-6 px-1">
+        <h2 className="text-lg font-bold text-slate-900 tracking-tight">
           Manage Problems
         </h2>
-        <span className="text-xs font-medium text-slate-500 bg-white/5 px-2 py-1 rounded-md border border-white/5">
+        <span className="text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
           {problems.length} Total
         </span>
       </div>
 
-      <div className="w-full overflow-hidden rounded-2xl border border-white/5 bg-[#0B1121]/40 backdrop-blur-sm">
+      {/* Table Container */}
+      <div className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-400">
-            <thead className="bg-white/5 text-xs uppercase font-semibold text-slate-300">
+          <table className="w-full text-left text-sm text-slate-600">
+            <thead className="bg-gray-50 text-xs uppercase font-bold text-slate-500 tracking-wider">
               <tr>
-                <th scope="col" className="px-6 py-4 tracking-wider">
+                <th scope="col" className="px-6 py-4">
                   Title
                 </th>
-                <th scope="col" className="px-6 py-4 tracking-wider">
+                <th scope="col" className="px-6 py-4">
                   Topic
                 </th>
-                <th scope="col" className="px-6 py-4 tracking-wider">
+                <th scope="col" className="px-6 py-4">
                   Difficulty
                 </th>
-                <th scope="col" className="px-6 py-4 text-right tracking-wider">
+                <th scope="col" className="px-6 py-4 text-right">
                   Action
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-gray-100 bg-white">
               {loading ? (
+                // Loading Skeletons
                 [1, 2, 3].map((i) => (
                   <tr key={i} className="animate-pulse">
                     <td className="px-6 py-4">
-                      <div className="h-4 w-32 bg-white/5 rounded"></div>
+                      <div className="h-4 w-32 bg-gray-100 rounded"></div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="h-4 w-20 bg-white/5 rounded"></div>
+                      <div className="h-4 w-20 bg-gray-100 rounded"></div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="h-4 w-16 bg-white/5 rounded"></div>
+                      <div className="h-4 w-16 bg-gray-100 rounded"></div>
                     </td>
                     <td className="px-6 py-4"></td>
                   </tr>
                 ))
               ) : problems.length > 0 ? (
+                // Data Rows
                 problems.map((problem) => (
                   <AdminProblemRow
                     key={problem._id}
@@ -129,8 +133,12 @@ export default function AdminProblemList() {
                   />
                 ))
               ) : (
+                // Empty State
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-slate-500 italic">
+                  <td
+                    colSpan={4}
+                    className="px-6 py-12 text-center text-slate-400 italic bg-gray-50/30"
+                  >
                     No problems found. Start by creating one.
                   </td>
                 </tr>
