@@ -9,7 +9,8 @@ export default function SolutionGate({ problemId }) {
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    api.get(`/api/solutions/${problemId}/access`)
+    api
+      .get(`/api/solutions/${problemId}/access`)
       .then(res => setAccess(res.data));
   }, [problemId]);
 
@@ -18,15 +19,28 @@ export default function SolutionGate({ problemId }) {
   if (!access.canView) {
     return (
       <>
-        <div className="border p-4 rounded">
-          <h3 className="font-semibold">🔒 Optimal Solution Locked</h3>
-          <button
-            onClick={() => setShowModal(true)}
-            className="mt-3 px-4 py-2 bg-blue-600 text-white rounded"
-          >
-            Unlock Solution
-          </button>
+        <div className="bg-[#edf4ff] border border-black/10 rounded-2xl px-8 py-7">
+          <div className="flex flex-col gap-3">
+            <h3 className="text-sm font-semibold text-[#0f172a]">
+              Optimal Solution
+            </h3>
+
+            <p className="text-sm text-[#64748b] leading-relaxed">
+              The reference solution is locked.  
+              Unlock it to review the optimal approach and learn the intended pattern.
+            </p>
+
+            <div className="pt-2">
+              <button
+                onClick={() => setShowModal(true)}
+                className="px-6 py-2.5 rounded-xl text-sm font-medium bg-[#2563eb] text-white hover:bg-[#1d4ed8] transition"
+              >
+                Unlock Solution
+              </button>
+            </div>
+          </div>
         </div>
+
         {showModal && (
           <UnlockModal
             problemId={problemId}
@@ -38,5 +52,9 @@ export default function SolutionGate({ problemId }) {
     );
   }
 
-  return <OptimalSolutionViewer problemId={problemId} />;
+  return (
+    <div className="bg-white border border-black/10 rounded-2xl overflow-hidden">
+      <OptimalSolutionViewer problemId={problemId} />
+    </div>
+  );
 }
